@@ -4,25 +4,15 @@ import (
 	"context"
 
 	pb "github.com/timpamungkas/course-grpc-proto/protogen/go/hello"
+	"github.com/timpamungkas/grpc-go-client/internal/port"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 type HelloAdapter struct {
-	helloClient pb.HelloServiceClient
+	helloClient port.HelloClientPort
 }
 
-func NewHelloAdapter(helloServiceUrl string) (*HelloAdapter, error) {
-	var opts []grpc.DialOption
-	opts = append(opts,
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-	)
-
-	conn, err := grpc.Dial(helloServiceUrl, opts...)
-	if err != nil {
-		return nil, err
-	}
-
+func NewHelloAdapter(conn *grpc.ClientConn) (*HelloAdapter, error) {
 	client := pb.NewHelloServiceClient(conn)
 
 	return &HelloAdapter{
