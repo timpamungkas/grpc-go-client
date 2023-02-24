@@ -4,11 +4,12 @@ import (
 	"context"
 
 	pb "github.com/timpamungkas/course-grpc-proto/protogen/go/hello"
+	"github.com/timpamungkas/grpc-go-client/internal/port"
 	"google.golang.org/grpc"
 )
 
 type HelloAdapter struct {
-	helloClient pb.HelloServiceClient
+	helloClient port.HelloClientPort
 }
 
 func NewHelloAdapter(conn *grpc.ClientConn) (*HelloAdapter, error) {

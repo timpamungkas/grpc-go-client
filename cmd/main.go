@@ -20,7 +20,7 @@ func main() {
 
 	conn, err := grpc.Dial("localhost:9090", opts...)
 	if err != nil {
-		log.Fatalln("Can't connect to gRPC server : %v", err)
+		log.Fatalln("Can't connect to gRPC server : ", err)
 	}
 
 	defer conn.Close()
