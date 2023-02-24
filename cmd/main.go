@@ -30,9 +30,7 @@ func main() {
 		log.Fatalf("Failed to initialize hello adapter : %v\n", err)
 	}
 
-	// application := app.NewApplication(helloAdapter)
-
-	greet, err := helloAdapter.SayHello(context.Background(), "Tim")
+	greet, err := helloAdapter.SayHello(context.Background(), "Bruce Wayne")
 
 	if err != nil {
 		log.Fatalf("Failed to call SayHello : %v\n", err)
