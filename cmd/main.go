@@ -30,11 +30,30 @@ func main() {
 		log.Fatalf("Failed to initialize hello adapter : %v\n", err)
 	}
 
-	greet, err := helloAdapter.SayHello(context.Background(), "Bruce Wayne")
+	runSayHello(helloAdapter, "Bruce Wayne")
+	runSayManyHellos(helloAdapter, "Clark Kent")
+	runSayHelloToEveryone(helloAdapter, []string{"Andy", "Bill", "Christian", "Donny", "Edgar"})
+	runSayHelloContinuous(helloAdapter, []string{"Anna", "Bella", "Carol", "Diana", "Emma"})
+}
+
+func runSayHello(adapter *hello.HelloAdapter, name string) {
+	greet, err := adapter.SayHello(context.Background(), name)
 
 	if err != nil {
 		log.Fatalf("Failed to call SayHello : %v\n", err)
 	}
 
-	log.Println(greet)
+	log.Println(greet.Greet)
+}
+
+func runSayManyHellos(adapter *hello.HelloAdapter, name string) {
+	adapter.SayManyHellos(context.Background(), name)
+}
+
+func runSayHelloToEveryone(adapter *hello.HelloAdapter, names []string) {
+	adapter.SayHelloToEveryone(context.Background(), names)
+}
+
+func runSayHelloContinuous(adapter *hello.HelloAdapter, names []string) {
+	adapter.SayHelloContinuous(context.Background(), names)
 }
