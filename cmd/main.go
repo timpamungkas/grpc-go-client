@@ -42,6 +42,7 @@ func main() {
 	}
 
 	runGetCurrentBalance(bankAdapter, "7835697001")
+	runFetchExchangeRates(bankAdapter, "USD", "IDR")
 }
 
 func runSayHello(adapter *hello.HelloAdapter, name string) {
@@ -74,4 +75,8 @@ func runGetCurrentBalance(adapter *bank.BankAdapter, acct string) {
 	}
 
 	log.Println(bal)
+}
+
+func runFetchExchangeRates(adapter *bank.BankAdapter, fromCur string, toCur string) {
+	adapter.FetchExchangeRates(context.Background(), fromCur, toCur)
 }
