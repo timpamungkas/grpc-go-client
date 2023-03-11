@@ -6,8 +6,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/timpamungkas/course-grpc-proto/protogen/go/hello"
 	"github.com/timpamungkas/grpc-go-client/internal/port"
+	"github.com/timpamungkas/grpc-proto/protogen/go/hello"
 	"google.golang.org/grpc"
 )
 

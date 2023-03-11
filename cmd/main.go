@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 
+	"github.com/timpamungkas/grpc-go-client/internal/adapter/bank"
 	"github.com/timpamungkas/grpc-go-client/internal/adapter/hello"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -25,15 +26,22 @@ func main() {
 
 	defer conn.Close()
 
-	helloAdapter, err := hello.NewHelloAdapter(conn)
+	// helloAdapter, err := hello.NewHelloAdapter(conn)
+	// if err != nil {
+	// 	log.Fatalf("Failed to initialize hello adapter : %v\n", err)
+	// }
+
+	// runSayHello(helloAdapter, "Bruce Wayne")
+	// runSayManyHellos(helloAdapter, "Clark Kent")
+	// runSayHelloToEveryone(helloAdapter, []string{"Andy", "Bill", "Christian", "Donny", "Edgar"})
+	// runSayHelloContinuous(helloAdapter, []string{"Anna", "Bella", "Carol", "Diana", "Emma"})
+
+	bankAdapter, err := bank.NewBankAdapter(conn)
 	if err != nil {
-		log.Fatalf("Failed to initialize hello adapter : %v\n", err)
+		log.Fatalf("Failed to initialize bank adapter : %v\n", err)
 	}
 
-	runSayHello(helloAdapter, "Bruce Wayne")
-	runSayManyHellos(helloAdapter, "Clark Kent")
-	runSayHelloToEveryone(helloAdapter, []string{"Andy", "Bill", "Christian", "Donny", "Edgar"})
-	runSayHelloContinuous(helloAdapter, []string{"Anna", "Bella", "Carol", "Diana", "Emma"})
+	runGetCurrentBalance(bankAdapter, "7835697001")
 }
 
 func runSayHello(adapter *hello.HelloAdapter, name string) {
@@ -56,4 +64,14 @@ func runSayHelloToEveryone(adapter *hello.HelloAdapter, names []string) {
 
 func runSayHelloContinuous(adapter *hello.HelloAdapter, names []string) {
 	adapter.SayHelloContinuous(context.Background(), names)
+}
+
+func runGetCurrentBalance(adapter *bank.BankAdapter, acct string) {
+	bal, err := adapter.GetCurrentBalance(context.Background(), acct)
+
+	if err != nil {
+		log.Fatalf("Failed to call GetCurrentBalance : %v\n", err)
+	}
+
+	log.Println(bal)
 }
