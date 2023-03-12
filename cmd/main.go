@@ -45,9 +45,9 @@ func main() {
 	}
 
 	// runGetCurrentBalance(bankAdapter, "7835697001")
-	// runFetchExchangeRates(bankAdapter, "USD", "IDR")
+	runFetchExchangeRates(bankAdapter, "USD", "IDR")
 	// runSummarizeTransactions(bankAdapter, "7835697002", 10)
-	runTransferMultiple(bankAdapter, "7835697001", "7835697003", 10)
+	// runTransferMultiple(bankAdapter, "7835697001", "7835697003", 10)
 }
 
 func runSayHello(adapter *hello.HelloAdapter, name string) {

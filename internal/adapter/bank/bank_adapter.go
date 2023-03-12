@@ -34,7 +34,8 @@ func (a *BankAdapter) GetCurrentBalance(ctx context.Context, acct string) (*bank
 	bal, err := a.bankClient.GetCurrentBalance(ctx, bankRequest)
 
 	if err != nil {
-		log.Fatalln("Error on GetCurrentBalance : ", err)
+		st, _ := status.FromError(err)
+		log.Fatalln("[FATAL] Error on GetCurrentBalance : ", st)
 	}
 
 	return bal, nil
@@ -49,7 +50,7 @@ func (a *BankAdapter) FetchExchangeRates(ctx context.Context, fromCur string, to
 	exchangeRateStream, err := a.bankClient.FetchExchangeRates(ctx, bankRequest)
 
 	if err != nil {
-		log.Fatalln("Error on FetchExchangeRates : ", err)
+		log.Fatalln("[FATAL] Error on FetchExchangeRates : ", err)
 	}
 
 	for {
@@ -60,7 +61,11 @@ func (a *BankAdapter) FetchExchangeRates(ctx context.Context, fromCur string, to
 		}
 
 		if err != nil {
-			log.Fatalln("Error on FetchExchangeRates : ", err)
+			st, _ := status.FromError(err)
+			if st.Code() == codes.InvalidArgument {
+				log.Fatalln("[FATAL] Error on FetchExchangeRates : ", st.Message())
+				break
+			}
 		}
 
 		log.Printf("Rate at %v from %v to %v is %v\n",
@@ -73,7 +78,7 @@ func (a *BankAdapter) SummarizeTransactions(ctx context.Context, acct string, tx
 	txStream, err := a.bankClient.SummarizeTransactions(ctx)
 
 	if err != nil {
-		log.Fatalln("Error on SummarizeTransactions : ", err)
+		log.Fatalln("[FATAL] Error on SummarizeTransactions : ", err)
 	}
 
 	for _, t := range tx {
@@ -98,7 +103,7 @@ func (a *BankAdapter) SummarizeTransactions(ctx context.Context, acct string, tx
 	summary, err := txStream.CloseAndRecv()
 
 	if err != nil {
-		log.Fatalln("Error on SummarizeTransactions : ", err)
+		log.Fatalln("[FATAL] Error on SummarizeTransactions : ", err)
 	}
 
 	log.Println(summary)
@@ -108,9 +113,7 @@ func (a *BankAdapter) TransferMultiple(ctx context.Context, trf []dbank.Transfer
 	trfStream, err := a.bankClient.TransferMultiple(ctx)
 
 	if err != nil {
-		// log.Fatalln("Error on TransferMultiple : ", err)
-		st, _ := status.FromError(err)
-		log.Println(st.Message())
+		log.Fatalln("[FATAL] Error on TransferMultiple : ", err)
 	}
 
 	trfChan := make(chan struct{})
@@ -138,35 +141,8 @@ func (a *BankAdapter) TransferMultiple(ctx context.Context, trf []dbank.Transfer
 				break
 			}
 
-			// break transaction in case error
-			// if err != nil {
-			// 	st, _ := status.FromError(err)
-			// 	log.Fatalln("[FATAL] Caught error on client : ", st.Message())
-			// } else {
-			// 	log.Printf("Transfer status : %v on %v\n", res.Status, res.Timestamp)
-			// }
-
 			if err != nil {
-				st := status.Convert(err)
-
-				if st.Code() == codes.FailedPrecondition {
-					log.Fatalln("[FATAL] Failed precondition : ", st.Message())
-				}
-
-				for _, detail := range st.Details() {
-					switch t := detail.(type) {
-					case *errdetails.PreconditionFailure:
-						for _, violation := range t.GetViolations() {
-							log.Println("[VIOLATION]", violation)
-						}
-					case *errdetails.ErrorInfo:
-						log.Printf("Error on : %v, with reason :%v\n", t.Domain, t.Reason)
-						for k, v := range t.GetMetadata() {
-							log.Printf("%v : %v\n", k, v)
-						}
-					}
-				}
-
+				handleTransferErrorGrpc(err)
 				break
 			} else {
 				log.Printf("Transfer status : %v on %v\n", res.Status, res.Timestamp)
@@ -178,4 +154,26 @@ func (a *BankAdapter) TransferMultiple(ctx context.Context, trf []dbank.Transfer
 	}()
 
 	<-trfChan
+}
+
+func handleTransferErrorGrpc(err error) {
+	st := status.Convert(err)
+
+	if st.Code() == codes.FailedPrecondition {
+		log.Fatalln("[FATAL] Failed precondition : ", st.Message())
+	}
+
+	for _, detail := range st.Details() {
+		switch t := detail.(type) {
+		case *errdetails.PreconditionFailure:
+			for _, violation := range t.GetViolations() {
+				log.Println("[VIOLATION]", violation)
+			}
+		case *errdetails.ErrorInfo:
+			log.Printf("Error on : %v, with reason :%v\n", t.Domain, t.Reason)
+			for k, v := range t.GetMetadata() {
+				log.Printf("%v : %v\n", k, v)
+			}
+		}
+	}
 }
