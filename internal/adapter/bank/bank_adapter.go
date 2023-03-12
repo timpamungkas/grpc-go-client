@@ -8,7 +8,10 @@ import (
 	dbank "github.com/timpamungkas/grpc-go-client/internal/application/domain/bank"
 	"github.com/timpamungkas/grpc-go-client/internal/port"
 	"github.com/timpamungkas/grpc-proto/protogen/go/bank"
+	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type BankAdapter struct {
@@ -76,9 +79,9 @@ func (a *BankAdapter) SummarizeTransactions(ctx context.Context, acct string, tx
 	for _, t := range tx {
 		ttype := bank.TransactionType_TRANSACTION_TYPE_UNSPECIFIED
 
-		if t.TransactionType == dbank.TransactionStatusIn {
+		if t.TransactionType == dbank.TransactionTypeIn {
 			ttype = bank.TransactionType_TRANSACTION_TYPE_IN
-		} else if t.TransactionType == dbank.TransactionStatusOut {
+		} else if t.TransactionType == dbank.TransactionTypeOut {
 			ttype = bank.TransactionType_TRANSACTION_TYPE_OUT
 		}
 
@@ -105,7 +108,9 @@ func (a *BankAdapter) TransferMultiple(ctx context.Context, trf []dbank.Transfer
 	trfStream, err := a.bankClient.TransferMultiple(ctx)
 
 	if err != nil {
-		log.Fatalln("Error on TransferMultiple : ", err)
+		// log.Fatalln("Error on TransferMultiple : ", err)
+		st, _ := status.FromError(err)
+		log.Println(st.Message())
 	}
 
 	trfChan := make(chan struct{})
@@ -133,11 +138,40 @@ func (a *BankAdapter) TransferMultiple(ctx context.Context, trf []dbank.Transfer
 				break
 			}
 
+			// break transaction in case error
+			// if err != nil {
+			// 	st, _ := status.FromError(err)
+			// 	log.Fatalln("[FATAL] Caught error on client : ", st.Message())
+			// } else {
+			// 	log.Printf("Transfer status : %v on %v\n", res.Status, res.Timestamp)
+			// }
+
 			if err != nil {
-				log.Fatalln("Error on TransferMultiple : ", err)
+				st := status.Convert(err)
+
+				if st.Code() == codes.FailedPrecondition {
+					log.Fatalln("[FATAL] Failed precondition : ", st.Message())
+				}
+
+				for _, detail := range st.Details() {
+					switch t := detail.(type) {
+					case *errdetails.PreconditionFailure:
+						for _, violation := range t.GetViolations() {
+							log.Println("[VIOLATION]", violation)
+						}
+					case *errdetails.ErrorInfo:
+						log.Printf("Error on : %v, with reason :%v\n", t.Domain, t.Reason)
+						for k, v := range t.GetMetadata() {
+							log.Printf("%v : %v\n", k, v)
+						}
+					}
+				}
+
+				break
+			} else {
+				log.Printf("Transfer status : %v on %v\n", res.Status, res.Timestamp)
 			}
 
-			log.Printf("Transfer status : %v on %v\n", res.Status, res.Timestamp)
 		}
 
 		close(trfChan)

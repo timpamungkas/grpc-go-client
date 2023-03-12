@@ -1,8 +1,8 @@
 package bank
 
 const (
-	TransactionStatusIn  string = "IN"
-	TransactionStatusOut string = "OUT"
+	TransactionTypeIn  string = "IN"
+	TransactionTypeOut string = "OUT"
 )
 
 type Transaction struct {
