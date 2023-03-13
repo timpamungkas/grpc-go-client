@@ -19,6 +19,8 @@ github.com/timpamungkas/grpc-proto v0.0.37 h1:FMW9o+NHi00OkG7UQ8KG/fVeGuNIEBfdyK
 github.com/timpamungkas/grpc-proto v0.0.37/go.mod h1:zNIiGffgAvIE2s2UMGi0OmLD6OofK+5ua3xrGLSGelQ=
 github.com/timpamungkas/grpc-proto v0.0.39 h1:5Q2SNVzie5Sn2SpE1n/Vp3NbGQOTzKrlWUknHbYNsiY=
 github.com/timpamungkas/grpc-proto v0.0.39/go.mod h1:VbMMW2driMjdaCZOwUclNf/3v1OH3RansKALlU29w78=
+github.com/timpamungkas/grpc-proto v0.0.42 h1:oI5Lr3+8YgrCl8bK6sWZ3MSXYqk8jv8PbSVPn/vGTlw=
+github.com/timpamungkas/grpc-proto v0.0.42/go.mod h1:VbMMW2driMjdaCZOwUclNf/3v1OH3RansKALlU29w78=
 golang.org/x/net v0.7.0 h1:rJrUqqhjsgNp7KqAIc25s9pZnjU7TUcSY7HcVZjdn1g=
 golang.org/x/net v0.7.0/go.mod h1:2Tu9+aMcznHK/AK1HMvgo6xiTLG5rD5rZLDS+rp2Bjs=
 golang.org/x/net v0.8.0 h1:Zrh2ngAOFYneWTAIAPethzeaQLuHwhuBkuV6ZiRnUaQ=
