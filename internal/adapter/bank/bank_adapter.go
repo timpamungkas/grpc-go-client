@@ -64,7 +64,6 @@ func (a *BankAdapter) FetchExchangeRates(ctx context.Context, fromCur string, to
 			st, _ := status.FromError(err)
 			if st.Code() == codes.InvalidArgument {
 				log.Fatalln("[FATAL] Error on FetchExchangeRates : ", st.Message())
-				break
 			}
 		}
 
@@ -103,7 +102,8 @@ func (a *BankAdapter) SummarizeTransactions(ctx context.Context, acct string, tx
 	summary, err := txStream.CloseAndRecv()
 
 	if err != nil {
-		log.Fatalln("[FATAL] Error on SummarizeTransactions : ", err)
+		st, _ := status.FromError(err)
+		log.Fatalln("[FATAL] Error on SummarizeTransactions : ", st)
 	}
 
 	log.Println(summary)
@@ -159,9 +159,7 @@ func (a *BankAdapter) TransferMultiple(ctx context.Context, trf []dbank.Transfer
 func handleTransferErrorGrpc(err error) {
 	st := status.Convert(err)
 
-	if st.Code() == codes.FailedPrecondition {
-		log.Fatalln("[FATAL] Failed precondition : ", st.Message())
-	}
+	log.Printf("[FATAL] Error %v on TransferMultiple : %v ", st.Code(), st.Message())
 
 	for _, detail := range st.Details() {
 		switch t := detail.(type) {
